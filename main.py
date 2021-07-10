@@ -49,14 +49,11 @@ def detectarForma(imagen):
 
 
 def save_image(image, contours, num):
-    idNum = 0
     print(contours)
     x,y,w,h = cv2.boundingRect(contours)
-    idNum+=1
     new_img=image[y:y+h,x:x+w]
-    cv2.imwrite('Crops/'+'crop_'+str(num)+'_'+str(idNum)+ '.png', new_img)
-
-    return num+1
+    cv2.imwrite('Crops/'+'crop_'+str(num)+ '.png', new_img)
+    return new_img
 
 
 def send_server():
@@ -112,8 +109,9 @@ while True:
         send_server()
     elif k==99:
         print("c")
-        cv2.imshow("Imagen Guardada "+str(numero), imagen_pre)
-        numero=save_image(imagen_pre,coordenadas,numero)
+        saved = save_image(imagen_pre,coordenadas,numero)
+        cv2.imshow("Imagen Guardada " + str(numero), saved)
+        numero+=1
         #save
 
 
