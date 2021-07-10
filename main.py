@@ -1,14 +1,14 @@
 import cv2
 import numpy as np
 
-nameWindow="Calculadora Canny"
+nameWindow="Proyecto"
 def nothing(x):
     pass
 def constructorVentana():
     cv2.namedWindow(nameWindow)
-    cv2.createTrackbar("min",nameWindow,0,255,nothing)
-    cv2.createTrackbar("max", nameWindow, 100, 255, nothing)
-    cv2.createTrackbar("kernel", nameWindow, 1, 100, nothing)
+    cv2.createTrackbar("min",nameWindow,200,255,nothing)
+    cv2.createTrackbar("max", nameWindow, 250, 255, nothing)
+    cv2.createTrackbar("kernel", nameWindow, 8,30, nothing)
     cv2.createTrackbar("areaMin", nameWindow, 500, 10000, nothing)
     #cv2.createTrackbar("areaMax", nameWindow, 5000, 100000000, nothing)
 
@@ -20,7 +20,7 @@ def calcularAreas(figuras):
 
 def detectarForma(imagen):
     imagenGris = cv2.cvtColor(imagen,cv2.COLOR_BGR2GRAY)
-    cv2.imshow("Grises",imagenGris)
+    #cv2.imshow("Grises",imagenGris)
     min = cv2.getTrackbarPos("min", nameWindow)
     max = cv2.getTrackbarPos("max", nameWindow)
     tamañoKernel = cv2.getTrackbarPos("kernel", nameWindow)
@@ -35,25 +35,54 @@ def detectarForma(imagen):
     for figuraActual in figuras:
         if areas[i] >= areaMin:
             vertices = cv2.approxPolyDP(figuraActual,0.05*cv2.arcLength(figuraActual,True),True)
-            mensaje = str(len(vertices))
-            if len(vertices) == 3:
-                #print("Triángulo!")
-                mensaje = "Triangulo "+str(areas[i])
+            mensaje = "ROI" #str(len(vertices))
+            if len(vertices) == 4:
+                cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
+                return vertices
 
-            #cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-            cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
+
         i=i+1
 
-video = cv2.VideoCapture('img/video.mp4')
-constructorVentana()
-while True:
-    _,imagen = video.read()
-    detectarForma(imagen)
-    cv2.imshow("Imagen", imagen)
 
+def save_image(image, contours, num):
+    idNum = 0
+    print(contours)
+    x,y,w,h = cv2.boundingRect(contours)
+    idNum+=1
+    new_img=image[y:y+h,x:x+w]
+    cv2.imwrite('Crops/'+'crop_'+str(num)+'_'+str(idNum)+ '.png', new_img)
+
+    return num+1
+
+
+def send_server():
+    #convert_images
+    #format_request
+    #send_request
+    pass
+
+### MAIN ###
+video = cv2.VideoCapture(0)
+constructorVentana()
+numero=0
+while True:
+    _, imagen = video.read()
+    imagen_pre = imagen.copy()
+    coordenadas = detectarForma(imagen)
+    cv2.imshow("Imagen", imagen)
     #Para el programa
     k=cv2.waitKey(5) & 0xFF
     if k==27:
         break
+    elif k==101:
+        print("e")
+        send_server()
+    elif k==99:
+        print("c")
+        cv2.imshow("Imagen Guardada "+str(numero), imagen_pre)
+        numero=save_image(imagen_pre,coordenadas,numero)
+        #save
+
 
 cv2.destroyAllWindows()
