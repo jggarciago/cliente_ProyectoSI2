@@ -1,4 +1,7 @@
 import cv2
+import os
+import base64
+import requests
 import numpy as np
 
 nameWindow="Proyecto"
@@ -57,10 +60,39 @@ def save_image(image, contours, num):
 
 
 def send_server():
-    #convert_images
-    #format_request
-    #send_request
+    directories = os.listdir('Crops/')
+    convertidas = []
+    for file in directories:
+        convertidas.append(convert_image(file))
+
+    request = format_request(convertidas)
+    send_request(request)
     pass
+
+
+def convert_image(file):
+    img = cv2.imread('Crops/'+file)
+    _, im_arr = cv2.imencode('.png', img)  # im_arr: image in Numpy one-dim array format.
+    im_bytes = im_arr.tobytes()
+    im_b64 = base64.b64encode(im_bytes)
+    req = {"id":file, "content":im_b64}
+    return req
+
+
+def format_request(imgs):
+    datos = {"id_client": "001",
+             "images": imgs,
+             "models": [""]}
+    print(datos)
+    return datos
+
+
+def send_request(request):
+    response = requests.post('https://localhost:8080/predict', json=request)
+    print("Status code: ", response.status_code)
+    print("Printing Entire Post Request")
+    print(response.json())
+
 
 ### MAIN ###
 video = cv2.VideoCapture(0)
