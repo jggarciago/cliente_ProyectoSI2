@@ -12,7 +12,7 @@ def constructorVentana():
     cv2.createTrackbar("min",nameWindow,200,255,nothing)
     cv2.createTrackbar("max", nameWindow, 250, 255, nothing)
     cv2.createTrackbar("kernel", nameWindow, 8,30, nothing)
-    cv2.createTrackbar("areaMin", nameWindow, 500, 10000, nothing)
+    cv2.createTrackbar("areaMin", nameWindow, 5000, 10000, nothing)
     #cv2.createTrackbar("areaMax", nameWindow, 5000, 100000000, nothing)
 
 def calcularAreas(figuras):
@@ -85,11 +85,19 @@ def format_request(imgs):
 
 
 def send_request(request):
-    response = requests.post('http://localhost:8000/predict', json=request)
-    print("Status code: ", response.status_code)
-    print("Printing Entire Post Request")
+    try:
+        response = requests.post('http://localhost:8000/predict', json=request)
+        print("Status code: ", response.status_code)
+        print("Printing Entire Post Request")
+    except:
+        print("Couldn't establish connection")
+        return
     if response.status_code == 200 or response.status_code == 400:
         print(response.json())
+        import os
+        directories = os.listdir('Crops/')
+        for file in directories:
+            os.remove('Crops/' + str(file))
     else:
         print("Unexpected server's error")
 
