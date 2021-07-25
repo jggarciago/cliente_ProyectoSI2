@@ -5,11 +5,12 @@ import numpy as np
 import os
 
 def predecir():
+    clases = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
     from Prediccion import Prediccion
     modelo1 = Prediccion("models/modelo1.h5", 256, 256)
     imagen = cv2.imread("CropsServidor/wrench.png")
     claseResultado = modelo1.predecir(imagen)
-    print(claseResultado)
+    print(clases[claseResultado])
     #claseResultado = "Martillo"
 
 
@@ -102,6 +103,6 @@ def servidor():
     else:
         print("Falló servidor")
 
-format_dataset([0, 1, 2, 3, 4])
-
+#format_dataset([0, 1, 2, 3, 4])
+predecir()
 

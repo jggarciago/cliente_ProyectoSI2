@@ -112,9 +112,18 @@ for train, test in kfold.split(inputs, targets):
     model.add(Dense(numeroCategorias, activation="softmax"))
 
     # Traducir de keras a tensorflow
+
+    if fold_no == 1:
+        model2 = model
+        model2.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
+        ruta = "models/modelo" + str(numero_modelo) + ".h5"
+        model2.fit(inputs[train], targets[train], epochs=1, batch_size=60)
+        model2.save(ruta)
     model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['acc',f1_m,precision_m, recall_m])
+
+
     # Entrenamiento
-    res = model.fit(inputs[train], targets[train], epochs=20, batch_size=60)
+    res = model.fit(inputs[train], targets[train], epochs=1, batch_size=60)
 
 
 
@@ -135,7 +144,6 @@ accuracy = 0.0
 f1_score = 0.0
 precision = 0.0
 recall = 0.0
-print(per_fold)
 for i in per_fold:
     total = total + 1
     loss = loss + i[0]
@@ -155,10 +163,7 @@ print("Precision", precision)
 print("Recall", recall)
 
 
-print(per_fold)
 
 # Guardar modelo
-ruta = "models/modelo"+str(numero_modelo)+".h5"
-model.save(ruta)
 # Informe de estructura de la red
-model.summary()
+#model.summary()
