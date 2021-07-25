@@ -4,6 +4,13 @@ import base64
 import numpy as np
 import os
 
+def predecir():
+    from Prediccion import Prediccion
+    modelo1 = Prediccion("models/modelo1.h5", 256, 256)
+    imagen = cv2.imread("CropsServidor/wrench.png")
+    claseResultado = modelo1.predecir(imagen)
+    print(claseResultado)
+    #claseResultado = "Martillo"
 
 
 imagenes = []
@@ -31,20 +38,70 @@ def convert_image(file):
 def format_request(imgs):
     datos = {"id_client": "001",
              "images": imgs,
-             "models": ["1", "2"]}
+             "models": ["1"]}
     print(datos)
     return datos
 #convert_image("crop_0.png")
-os.remove("Crops/")
-convertidas = []
-for i in range(0,1):
-    convertidas.append({"id":"Frozen"+str(i), "content":string})
-#request = format_request(convertidas)
-#response = requests.post('http://localhost:8000/predict', json=request)
-#print("Status code: ", response.status_code)
-print("Printing Entire Post Request")
-#if response.status_code == 200 or response.status_code == 400:
-#    print(response.json())
-#else:
-print("Falló servidor")
+
+import cv2
+import numpy as np
+
+
+def format_img(in_img, out_img):
+    img = cv2.imread(in_img)
+    #get size
+    height, width, channels = img.shape
+    # Create a black image
+    x = height if height > width else width
+    y = height if height > width else width
+    square= np.zeros((x,y,3), np.uint8)
+    tupla = img[0][0]
+    for s in square:
+        for q in s:
+            q[0] = tupla[0]
+            q[1] = tupla[1]
+            q[2] = tupla[2]
+    square[int((y-height)/2):int(y-(y-height)/2), int((x-width)/2):int(x-(x-width)/2)] = img
+    dim = (256, 256)
+    resized = cv2.resize(square, dim)
+    cv2.imwrite(out_img,resized)
+
+def format_dataset(clases):
+    nombre = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
+    for clase in clases:
+        dir_inicial = 'imagenes0/' + nombre[clase] + "/"
+        directories = os.listdir(dir_inicial)
+        num = 0
+        dir = 'train'
+        for file in directories:
+            print(file)
+            if num == 80:
+                dir = 'test'
+                num = 0
+            format_img(dir_inicial + file, "dataset/"+dir+"/" + str(clase) + "/" + str(clase) + "_" + str(num) + ".jpg")
+            num = num + 1
+
+def dataset_pruebas():
+    clases = [0, 1, 2, 3, 4]
+    start = 80
+    end = 100
+    for clase in clases:
+        for i in range(start, end):
+            # In Windows
+            os.popen('copy dataset/train/' + str(clase) + '/' + str(i) + ' dataset/test/' + str(clase) + '/' + str(i))
+
+def servidor():
+    convertidas = []
+    convertidas.append({"id":"Frozen.png", "content":string})
+    request = format_request(convertidas)
+    response = requests.post('http://localhost:8000/predict', json=request)
+    print("Status code: ", response.status_code)
+    print("Printing Entire Post Request")
+    if response.status_code == 200 or response.status_code == 400:
+        print(response.json())
+    else:
+        print("Falló servidor")
+
+format_dataset([0, 1, 2, 3, 4])
+
 

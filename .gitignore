@@ -1,3 +1,5 @@
 .idea
 Crops/*
+!servidor/Crops/.gitkeep
 servidor/CropsServidor/*
+!servidor/CropsServidor/.gitkeep

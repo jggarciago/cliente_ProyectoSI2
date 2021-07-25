@@ -3,11 +3,12 @@ from flask import request
 import base64
 import cv2
 import numpy as np
-#from Prediccion import Prediccion
+from Prediccion import Prediccion
 
 dirImg = "CropsServidor"
 extImg = ".png"
 clases = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
+modelo1 = Prediccion("models/modelo1.h5", 256, 256)
 
 app = Flask(__name__)
 
@@ -26,11 +27,10 @@ def predict():
             resultados = []
             for img in imagenes:
                 decode_image(img["content"], img["id"])
-                #miModeloCNN = Prediccion("models/modelo'+modelo+'.h5", 256, 256)
-                #imagen = cv2.imread(dirImg + "/" + img["id"] + extImg)
-                #claseResultado = miModeloCNN.predecir(imagen)
-                claseResultado = "Martillo"
-                resultados.append({"class":claseResultado, "id-image":img["id"]})
+                imagen = cv2.imread(dirImg + "/" + img["id"])
+                claseResultado = modelo1.predecir(imagen)
+                #claseResultado = "Martillo"
+                resultados.append({"class":clases[claseResultado], "id-image":img["id"]})
             resultadosTodos.append({"model_id":modelo, "results":resultados})
 
         return {"status":"success", "message":"Predictions made satisfactorily", "results":resultadosTodos}, 200
@@ -41,7 +41,7 @@ def decode_image(im_b64, fileName):
     im_bytes = base64.b64decode(im_b64)
     im_arr = np.frombuffer(im_bytes, dtype=np.uint8)  # im_arr is one-dim Numpy array
     img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
-    cv2.imwrite(dirImg + '/' + fileName + extImg, img)
+    cv2.imwrite(dirImg + '/' + fileName, img)
 
 if __name__=="__main__":
     app.run(debug=True,port=8000)
