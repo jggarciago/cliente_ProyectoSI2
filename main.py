@@ -72,7 +72,7 @@ def convert_image(file):
     _, im_arr = cv2.imencode('.png', img)  # im_arr: image in Numpy one-dim array format.
     im_bytes = im_arr.tobytes()
     im_b64 = base64.b64encode(im_bytes)
-    req = {"id":file, "content":im_b64}
+    req = {"id":file, "content":im_b64.decode('ascii')}
     return req
 
 
@@ -85,10 +85,13 @@ def format_request(imgs):
 
 
 def send_request(request):
-    response = requests.post('https://localhost:8080/predict', json=request)
+    response = requests.post('http://localhost:8000/predict', json=request)
     print("Status code: ", response.status_code)
     print("Printing Entire Post Request")
-    print(response.json())
+    if response.status_code == 200 or response.status_code == 400:
+        print(response.json())
+    else:
+        print("Unexpected server's error")
 
 
 ### MAIN ###
