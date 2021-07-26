@@ -6,11 +6,14 @@ import os
 
 def predecir():
     clases = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
+    imagenes = ["CropsServidor/martillo.JPEG", "CropsServidor/destornillador.JPEG", "CropsServidor/llave.JPEG", "CropsServidor/alicate.jpeg", "CropsServidor/regla.jpeg"]
     from Prediccion import Prediccion
     modelo1 = Prediccion("models/modelo1.h5", 256, 256)
-    imagen = cv2.imread("CropsServidor/wrench.png")
-    claseResultado = modelo1.predecir(imagen)
-    print(clases[claseResultado])
+    for img in imagenes:
+        print(img)
+        imagen = cv2.imread(img)
+        claseResultado = modelo1.predecir(imagen)
+        print(clases[claseResultado])
     #claseResultado = "Martillo"
 
 
@@ -50,37 +53,44 @@ import numpy as np
 
 def format_img(in_img, out_img):
     img = cv2.imread(in_img)
+    square = img
     #get size
-    height, width, channels = img.shape
-    # Create a black image
-    x = height if height > width else width
-    y = height if height > width else width
-    square= np.zeros((x,y,3), np.uint8)
-    tupla = img[0][0]
-    for s in square:
-        for q in s:
-            q[0] = tupla[0]
-            q[1] = tupla[1]
-            q[2] = tupla[2]
-    square[int((y-height)/2):int(y-(y-height)/2), int((x-width)/2):int(x-(x-width)/2)] = img
+    if False:
+        height, width, channels = img.shape
+        # Create a black image
+        x = height if height > width else width
+        y = height if height > width else width
+        square= np.zeros((x,y,3), np.uint8)
+        tupla = img[0][0]
+        for s in square:
+            for q in s:
+                q[0] = tupla[0]
+                q[1] = tupla[1]
+                q[2] = tupla[2]
+        square[int((y-height)/2):int(y-(y-height)/2), int((x-width)/2):int(x-(x-width)/2)] = img
     dim = (256, 256)
     resized = cv2.resize(square, dim)
     cv2.imwrite(out_img,resized)
 
-def format_dataset(clases):
+def format_dataset(clases, train, test):
     nombre = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
     for clase in clases:
         dir_inicial = 'imagenes0/' + nombre[clase] + "/"
         directories = os.listdir(dir_inicial)
         num = 0
         dir = 'train'
+        done = False
         for file in directories:
-            print(file)
-            if num == 80:
-                dir = 'test'
-                num = 0
-            format_img(dir_inicial + file, "dataset/"+dir+"/" + str(clase) + "/" + str(clase) + "_" + str(num) + ".jpg")
-            num = num + 1
+            if not done:
+                print(file)
+                if num == train:
+                    dir = 'test'
+                    num = 0
+                if (dir == 'test' and num == test):
+                    done = True
+                format_img(dir_inicial + file, "dataset/"+dir+"/" + str(clase) + "/" + str(clase) + "_" + str(num) + ".jpg")
+                num = num + 1
+            
 
 def dataset_pruebas():
     clases = [0, 1, 2, 3, 4]
@@ -103,6 +113,6 @@ def servidor():
     else:
         print("Falló servidor")
 
-#format_dataset([0, 1, 2, 3, 4])
+#format_dataset([4], 140, 35)
 predecir()
 

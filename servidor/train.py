@@ -10,7 +10,7 @@ from keras import backend as K
 from sklearn.metrics import classification_report
 
 
-numero_modelo = 1
+numero_modelo = 2
 
 def recall_m(y_true, y_pred):
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
@@ -28,7 +28,6 @@ def f1_m(y_true, y_pred):
     precision = precision_m(y_true, y_pred)
     recall = recall_m(y_true, y_pred)
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
-
 
 #Carga imagenes según categorias por carpetas
 def cargarDatos(fase,numeroCategorias,limite,ancho,alto):
@@ -63,10 +62,10 @@ pixeles=ancho*alto
 #Blanco y negro --> 1 Canal
 numeroCanales=1
 formaImagen=(ancho,alto,numeroCanales)
-numeroCategorias=5
 
 cantidadDatosEntrenamiento=[80, 80, 80, 80, 80]
 cantidadDatosPruebas=[20, 20, 20, 20, 20]
+numeroCategorias = len(cantidadDatosEntrenamiento)
 
 #Cargar las imágenes
 imagenes, probabilidades = cargarDatos("dataset/train/",numeroCategorias,cantidadDatosEntrenamiento,ancho,alto)
@@ -101,7 +100,7 @@ for train, test in kfold.split(inputs, targets):
     # Convolución reduce, maxpool también reduce. Para otras capas puedo copiar y pegar
     model.add(MaxPool2D(pool_size=2, strides=2))
 
-    model.add(Conv2D(kernel_size=3, strides=1, filters=36, padding="same", activation="relu", name="capa_2"))
+    model.add(Conv2D(kernel_size=3, strides=1, filters=32, padding="same", activation="relu", name="capa_2"))
     model.add(MaxPool2D(pool_size=2, strides=2))
 
     # Aplanamiento
@@ -117,13 +116,14 @@ for train, test in kfold.split(inputs, targets):
         model2 = model
         model2.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
         ruta = "models/modelo" + str(numero_modelo) + ".h5"
-        model2.fit(inputs[train], targets[train], epochs=1, batch_size=60)
+        model2.fit(inputs[train], targets[train], epochs=22, batch_size=60)
         model2.save(ruta)
     model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['acc',f1_m,precision_m, recall_m])
 
 
     # Entrenamiento
-    res = model.fit(inputs[train], targets[train], epochs=1, batch_size=60)
+    if fold_no != 1:
+        res = model.fit(inputs[train], targets[train], epochs=22, batch_size=60)
 
 
 
@@ -133,6 +133,7 @@ for train, test in kfold.split(inputs, targets):
 
     loss, accuracy, f1_score, precision, recall = model.evaluate(inputs[test], targets[test], verbose=0)
     per_fold.append([loss, accuracy, f1_score, precision, recall])
+    print(per_fold[fold_no - 1])
 
     # Increase fold number
     fold_no = fold_no + 1
@@ -151,11 +152,12 @@ for i in per_fold:
     f1_score = f1_score + i[2]
     precision = precision + i[3]
     recall = recall + i[4]
-loss = loss / total
-accuracy = accuracy / total
-f1_score = f1_score / total
-precision = precision / total
-recall = recall / total
+if (total != 0):
+    loss = loss / total
+    accuracy = accuracy / total
+    f1_score = f1_score / total
+    precision = precision / total
+    recall = recall / total
 print("Loss", loss)
 print("Accuracy", accuracy)
 print("F1 Score", f1_score)
