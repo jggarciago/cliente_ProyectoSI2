@@ -21,6 +21,7 @@ def calcularAreas(figuras):
         areas.append(cv2.contourArea(figuraActual))
 
     new_figuras = [x for (y, x) in sorted(zip(areas, figuras), key=lambda pair: pair[0])]
+    areas.sort(reverse=True)
     return areas, new_figuras
 
 def detectarForma(imagen):
