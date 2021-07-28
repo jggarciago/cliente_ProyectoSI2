@@ -7,8 +7,8 @@ from Prediccion import Prediccion
 
 dirImg = "CropsServidor"
 extImg = ".png"
-clases = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
-modelo1 = Prediccion("models/modelo1.h5", 256, 256)
+clases = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+modelo1 = Prediccion("models/modelo1.h5", 100, 100)
 
 app = Flask(__name__)
 
@@ -29,7 +29,7 @@ def predict():
                 decode_image(img["content"], img["id"])
                 imagen = cv2.imread(dirImg + "/" + img["id"])
                 claseResultado = modelo1.predecir(imagen)
-                #claseResultado = "Martillo"
+                print(clases[claseResultado])
                 resultados.append({"class":clases[claseResultado], "id-image":img["id"]})
             resultadosTodos.append({"model_id":modelo, "results":resultados})
 

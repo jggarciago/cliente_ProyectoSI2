@@ -8,9 +8,9 @@ from keras.layers import InputLayer,Input,Conv2D, MaxPool2D,Reshape,Dense,Flatte
 from sklearn.model_selection import KFold
 from keras import backend as K
 from sklearn.metrics import classification_report
+import imutils
 
-
-numero_modelo = 2
+numero_modelo = 1
 
 def recall_m(y_true, y_pred):
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
@@ -29,6 +29,13 @@ def f1_m(y_true, y_pred):
     recall = recall_m(y_true, y_pred)
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
 
+def formatear_imagen(imagen, ancho, alto):
+    imagen2 = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
+    imagen2 = cv2.resize(imagen2, (ancho, alto))
+    imagen2 = imagen2.flatten()
+    imagen2 = imagen2 / 255
+    return imagen2
+
 #Carga imagenes según categorias por carpetas
 def cargarDatos(fase,numeroCategorias,limite,ancho,alto):
     imagenesCargadas=[]
@@ -38,15 +45,17 @@ def cargarDatos(fase,numeroCategorias,limite,ancho,alto):
             ruta=fase+str(categoria)+"/"+str(categoria)+"_"+str(idImagen)+".jpg"
             print(ruta)
             imagen = cv2.imread(ruta)
-            imagen = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
-            imagen = cv2.resize(imagen, (ancho, alto))
-            imagen = imagen.flatten()
-            imagen = imagen / 255
-            imagenesCargadas.append(imagen)
-
+            imagenesCargadas.append(formatear_imagen(imagen, ancho, alto))
             probabilidades = np.zeros(numeroCategorias)
             probabilidades[categoria] = 1
             valorEsperado.append(probabilidades)
+            for angle in np.arange(0, 360, 10):
+                imagen2 = imutils.rotate_bound(imagen, angle)
+                imagenesCargadas.append(formatear_imagen(imagen2, ancho, alto))
+                probabilidades = np.zeros(numeroCategorias)
+                probabilidades[categoria] = 1
+                valorEsperado.append(probabilidades)
+
     imagenesEntrenamiento = np.array(imagenesCargadas)
     valoresEsperados = np.array(valorEsperado)
     return imagenesEntrenamiento, valoresEsperados
@@ -55,17 +64,20 @@ def cargarDatos(fase,numeroCategorias,limite,ancho,alto):
 print("tensorflow", tf.__version__)
 print("keras", keras.__version__)
 
-ancho = 256
-alto = 256
+ancho = 100
+alto = 100
 pixeles=ancho*alto
 #Imagen RGB --> 3 Canales
 #Blanco y negro --> 1 Canal
 numeroCanales=1
 formaImagen=(ancho,alto,numeroCanales)
 
-cantidadDatosEntrenamiento=[80, 80, 80, 80, 80]
-cantidadDatosPruebas=[20, 20, 20, 20, 20]
-numeroCategorias = len(cantidadDatosEntrenamiento)
+cantidadDatosEntrenamiento=[]
+cantidadDatosPruebas=[]
+numeroCategorias = 10
+for i in range(0, numeroCategorias):
+    cantidadDatosEntrenamiento.append(8)
+    cantidadDatosPruebas.append(2)
 
 #Cargar las imágenes
 imagenes, probabilidades = cargarDatos("dataset/train/",numeroCategorias,cantidadDatosEntrenamiento,ancho,alto)
@@ -96,11 +108,11 @@ for train, test in kfold.split(inputs, targets):
 
     # Capas ocultas
     # Capas convolucionales
-    model.add(Conv2D(kernel_size=5, strides=2, filters=16, padding="same", activation="relu", name="capa_1"))
+    model.add(Conv2D(kernel_size=5, strides=2, filters=8, padding="same", activation="relu", name="capa_1"))
     # Convolución reduce, maxpool también reduce. Para otras capas puedo copiar y pegar
     model.add(MaxPool2D(pool_size=2, strides=2))
 
-    model.add(Conv2D(kernel_size=3, strides=1, filters=32, padding="same", activation="relu", name="capa_2"))
+    model.add(Conv2D(kernel_size=3, strides=1, filters=16, padding="same", activation="relu", name="capa_2"))
     model.add(MaxPool2D(pool_size=2, strides=2))
 
     # Aplanamiento
@@ -116,14 +128,15 @@ for train, test in kfold.split(inputs, targets):
         model2 = model
         model2.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
         ruta = "models/modelo" + str(numero_modelo) + ".h5"
-        model2.fit(inputs[train], targets[train], epochs=22, batch_size=60)
+        res = model2.fit(inputs[train], targets[train], epochs=18, batch_size=60)
         model2.save(ruta)
     model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['acc',f1_m,precision_m, recall_m])
 
 
     # Entrenamiento
     if fold_no != 1:
-        res = model.fit(inputs[train], targets[train], epochs=22, batch_size=60)
+        res = model.fit(inputs[train], targets[train], epochs=18, batch_size=60)
+
 
 
 
@@ -137,6 +150,7 @@ for train, test in kfold.split(inputs, targets):
 
     # Increase fold number
     fold_no = fold_no + 1
+    break
 
 nombre_metricas = ["loss", "accuracy", "f1_score", "precision", "recall"]
 total = 0
