@@ -86,7 +86,7 @@ def format_request(imgs):
     datos = {"id_client": "001",
              "images": imgs,
              "models": [""]}
-    print(datos)
+    #print(datos)
     return datos
 
 
