@@ -49,14 +49,13 @@ def detectarForma(imagen):
                 cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
                 figuras_de_interes.append(vertices)
-                return vertices
-                #if len(figuras_de_interes)>=2:
-                    #return figuras_de_interes[1] #TODO:FIX
+                if len(figuras_de_interes)>=2:
+                    return figuras_de_interes
         i=i+1
 
 
 def save_image(image, contours, num):
-    print(contours)
+    #print(contours)
     x,y,w,h = cv2.boundingRect(contours)
     new_img=image[y:y+h,x:x+w]
     cv2.imwrite('Crops/'+'crop_'+str(num)+ '.png', new_img)
@@ -122,20 +121,14 @@ while True:
     k=cv2.waitKey(5) & 0xFF
     if k==27:
         break
-    elif k==101:
-        print("e")
-        #send_server()
-    elif k==99:
-        print("c")
-        saved = save_image(imagen_pre,coordenadas,numero)
-        cv2.imshow("Imagen Guardada " + str(numero), saved)
-        numero+=1
-        #save
-    elif k == 113:
-        print("p")
+    elif k == 112:
+        saved = save_image(imagen_pre, coordenadas[0], numero)
+        numero += 1
+        saved = save_image(imagen_pre, coordenadas[1], numero)
+        numero += 1
+        send_server()
 
 
 cv2.destroyAllWindows()
 
-#TODO: Guardar y envíar foto de ambos ROI
 #TODO: Mostrar respuesta del servidor para hacer la suma
