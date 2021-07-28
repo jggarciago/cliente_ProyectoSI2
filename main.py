@@ -4,7 +4,7 @@ import base64
 import requests
 import numpy as np
 
-nameWindow="Proyecto"
+nameWindow="Proyecto SI2"
 def nothing(x):
     pass
 def constructorVentana():
@@ -12,7 +12,7 @@ def constructorVentana():
     cv2.createTrackbar("min",nameWindow,200,255,nothing)
     cv2.createTrackbar("max", nameWindow, 250, 255, nothing)
     cv2.createTrackbar("kernel", nameWindow, 7,30, nothing)
-    cv2.createTrackbar("areaMin", nameWindow, 50000, 100000, nothing)
+    cv2.createTrackbar("areaMin", nameWindow, 10000, 100000, nothing)
     #cv2.createTrackbar("areaMax", nameWindow, 5000, 100000000, nothing)
 
 def calcularAreas(figuras):
@@ -137,6 +137,5 @@ while True:
 
 cv2.destroyAllWindows()
 
-#TODO: Tomar fotos para dataset
 #TODO: Guardar y envíar foto de ambos ROI
 #TODO: Mostrar respuesta del servidor para hacer la suma
