@@ -11,15 +11,17 @@ def constructorVentana():
     cv2.namedWindow(nameWindow)
     cv2.createTrackbar("min",nameWindow,200,255,nothing)
     cv2.createTrackbar("max", nameWindow, 250, 255, nothing)
-    cv2.createTrackbar("kernel", nameWindow, 8,30, nothing)
-    cv2.createTrackbar("areaMin", nameWindow, 5000, 10000, nothing)
+    cv2.createTrackbar("kernel", nameWindow, 7,30, nothing)
+    cv2.createTrackbar("areaMin", nameWindow, 50000, 100000, nothing)
     #cv2.createTrackbar("areaMax", nameWindow, 5000, 100000000, nothing)
 
 def calcularAreas(figuras):
     areas = []
     for figuraActual in figuras:
         areas.append(cv2.contourArea(figuraActual))
-    return areas
+
+    new_figuras = [x for (y, x) in sorted(zip(areas, figuras), key=lambda pair: pair[0])]
+    return areas, new_figuras
 
 def detectarForma(imagen):
     imagenGris = cv2.cvtColor(imagen,cv2.COLOR_BGR2GRAY)
@@ -31,10 +33,13 @@ def detectarForma(imagen):
     kernel = np.ones((tamañoKernel,tamañoKernel),np.uint8)
     bordes = cv2.dilate(bordes,kernel)
     cv2.imshow("Bordes",bordes)
-    figuras,jerarquia = cv2.findContours(bordes, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    areas = calcularAreas(figuras)
+    figuras,jerarquia = cv2.findContours(bordes, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    areas, new_figuras = calcularAreas(figuras)
+    new_figuras.reverse()
+    figuras = new_figuras
     i = 0
     areaMin=cv2.getTrackbarPos("areaMin", nameWindow)
+    figuras_de_interes = []
     for figuraActual in figuras:
         if areas[i] >= areaMin:
             vertices = cv2.approxPolyDP(figuraActual,0.05*cv2.arcLength(figuraActual,True),True)
@@ -42,9 +47,10 @@ def detectarForma(imagen):
             if len(vertices) == 4:
                 cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
+                figuras_de_interes.append(vertices)
                 return vertices
-
-
+                #if len(figuras_de_interes)>=2:
+                    #return figuras_de_interes[1] #TODO:FIX
         i=i+1
 
 
@@ -117,13 +123,19 @@ while True:
         break
     elif k==101:
         print("e")
-        send_server()
+        #send_server()
     elif k==99:
         print("c")
         saved = save_image(imagen_pre,coordenadas,numero)
         cv2.imshow("Imagen Guardada " + str(numero), saved)
         numero+=1
         #save
+    elif k == 113:
+        print("p")
 
 
 cv2.destroyAllWindows()
+
+#TODO: Tomar fotos para dataset
+#TODO: Guardar y envíar foto de ambos ROI
+#TODO: Mostrar respuesta del servidor para hacer la suma
