@@ -4,11 +4,14 @@ import base64
 import cv2
 import numpy as np
 from Prediccion import Prediccion
+from time import process_time
 
 dirImg = "CropsServidor"
 extImg = ".png"
 clases = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-modelo1 = Prediccion("models/modelo1.h5", 100, 100)
+modelos_todos = []
+for i in range(1, 4):
+    modelos_todos.append(Prediccion("models/modelo"+str(i)+".h5", 128, 128))
 
 app = Flask(__name__)
 
@@ -22,16 +25,27 @@ def predict():
 
         resultadosTodos = []
         if len(modelos) == 0 or len(modelos) == 1 and modelos[0] == "":
-            modelos = [0]
+            modelos = [1]
         for modelo in modelos:
             resultados = []
+            tiempo = 0
+            total = 0
             for img in imagenes:
                 decode_image(img["content"], img["id"])
                 imagen = cv2.imread(dirImg + "/" + img["id"])
-                claseResultado = modelo1.predecir(imagen)
+                modelo0 = modelos_todos[0]
+                if modelo < len(modelos_todos):
+                    modelo0 = modelos_todos[modelo]
+                t1_start = process_time()
+                claseResultado = modelo0.predecir(imagen)
+                t1_stop = process_time()
                 print(clases[claseResultado])
                 resultados.append({"class":clases[claseResultado], "id-image":img["id"]})
-            resultadosTodos.append({"model_id":modelo, "results":resultados})
+                tiempo = tiempo + t1_stop - t1_start
+                total = total + 1
+            if total != 0:
+                tiempo = tiempo / total
+            resultadosTodos.append({"model_id":modelo, "results":resultados, "time":str(tiempo)})
 
         return {"status":"success", "message":"Predictions made satisfactorily", "results":resultadosTodos}, 200
     return {"status":"error", "message":"Error making predictions"}, 400

@@ -10,7 +10,18 @@ from keras import backend as K
 from sklearn.metrics import classification_report
 import imutils
 
-numero_modelo = 1
+numero_modelo = 3
+
+epocas = 8
+batch = 60
+kernel = [5, 3]
+strides = [1, 1]
+filtros = [4, 8]
+pool = [2, 2]
+strides_pool = [2, 2]
+padding = ["same", "same"]
+activacion = ["relu", "relu"]
+capa_densa = 128
 
 def recall_m(y_true, y_pred):
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
@@ -64,8 +75,8 @@ def cargarDatos(fase,numeroCategorias,limite,ancho,alto):
 print("tensorflow", tf.__version__)
 print("keras", keras.__version__)
 
-ancho = 100
-alto = 100
+ancho = 128
+alto = 128
 pixeles=ancho*alto
 #Imagen RGB --> 3 Canales
 #Blanco y negro --> 1 Canal
@@ -100,6 +111,14 @@ per_fold = []
 # K-fold Cross Validation model evaluation
 fold_no = 1
 for train, test in kfold.split(inputs, targets):
+    #print(targets[test])
+    pos_uno = []
+    for i in targets[test]:
+        for index, j in enumerate(i):
+            if j == 1.:
+                pos_uno.append(index)
+    #print(pos_uno)
+
     model = Sequential()
 
     # Capa entrada
@@ -108,12 +127,10 @@ for train, test in kfold.split(inputs, targets):
 
     # Capas ocultas
     # Capas convolucionales
-    model.add(Conv2D(kernel_size=5, strides=2, filters=8, padding="same", activation="relu", name="capa_1"))
-    # Convolución reduce, maxpool también reduce. Para otras capas puedo copiar y pegar
-    model.add(MaxPool2D(pool_size=2, strides=2))
-
-    model.add(Conv2D(kernel_size=3, strides=1, filters=16, padding="same", activation="relu", name="capa_2"))
-    model.add(MaxPool2D(pool_size=2, strides=2))
+    for k in range(0, len(kernel)):
+        model.add(Conv2D(kernel_size=kernel[k], strides=strides[k], filters=filtros[k], padding=padding[k], activation=activacion[k], name="capa_" + str(k)))
+        # Convolución reduce, maxpool también reduce. Para otras capas puedo copiar y pegar
+        model.add(MaxPool2D(pool_size=pool[k], strides=strides_pool[k]))
 
     # Aplanamiento
     model.add(Flatten())
@@ -128,14 +145,27 @@ for train, test in kfold.split(inputs, targets):
         model2 = model
         model2.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
         ruta = "models/modelo" + str(numero_modelo) + ".h5"
-        res = model2.fit(inputs[train], targets[train], epochs=18, batch_size=60)
+        res = model2.fit(inputs[train], targets[train], epochs=epocas, batch_size=batch)
         model2.save(ruta)
+        prediction = model2.predict(inputs[test])
+        pos_uno_p = []
+        #print(prediction)
+        for i in prediction:
+            max = 0
+            indexMax = 0
+            for index, j in enumerate(i):
+                if j > max:
+                    max = j
+                    indexMax = index
+            pos_uno_p.append(indexMax)
+        #print(pos_uno_p)
+        confusion = tf.math.confusion_matrix(labels=pos_uno, predictions=pos_uno_p, num_classes=numeroCategorias)
     model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['acc',f1_m,precision_m, recall_m])
 
 
     # Entrenamiento
     if fold_no != 1:
-        res = model.fit(inputs[train], targets[train], epochs=18, batch_size=60)
+        res = model.fit(inputs[train], targets[train], epochs=epocas, batch_size=batch)
 
 
 
@@ -150,7 +180,6 @@ for train, test in kfold.split(inputs, targets):
 
     # Increase fold number
     fold_no = fold_no + 1
-    break
 
 nombre_metricas = ["loss", "accuracy", "f1_score", "precision", "recall"]
 total = 0
@@ -179,6 +208,7 @@ print("Precision", precision)
 print("Recall", recall)
 
 
+print(confusion)
 
 # Guardar modelo
 # Informe de estructura de la red
