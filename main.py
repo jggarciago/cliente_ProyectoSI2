@@ -4,6 +4,26 @@ import base64
 import requests
 import numpy as np
 
+class Acumulador:
+    def __init__(self):
+        self.sum = 0
+        self.acc = 0
+
+    def sumar(self, json):
+        dato1= json['results'][0]['results'][0]['class']
+        dato2= json['results'][0]['results'][1]['class']
+        self.sum = int(dato1) + int(dato2)
+        self.acc += self.sum
+
+    def suma(self):
+        return self.sum
+
+    def acumulado(self):
+        return self.acc
+
+    def mostrar(self):
+        return self.acc!=0
+
 nameWindow="Proyecto SI2"
 def nothing(x):
     pass
@@ -46,7 +66,7 @@ def detectarForma(imagen):
             vertices = cv2.approxPolyDP(figuraActual,0.05*cv2.arcLength(figuraActual,True),True)
             mensaje = "ROI" #str(len(vertices))
             if len(vertices) == 4:
-                cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                cv2.putText(imagen, mensaje, (350, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
                 figuras_de_interes.append(vertices)
                 if len(figuras_de_interes)>=2:
@@ -62,14 +82,14 @@ def save_image(image, contours, num):
     return new_img
 
 
-def send_server():
+def send_server(acumulador):
     directories = os.listdir('Crops/')
     convertidas = []
     for file in directories:
         convertidas.append(convert_image(file))
 
     request = format_request(convertidas)
-    send_request(request)
+    send_request(request, acumulador)
     pass
 
 
@@ -90,7 +110,7 @@ def format_request(imgs):
     return datos
 
 
-def send_request(request):
+def send_request(request, acumulador):
     try:
         response = requests.post('http://localhost:8000/predict', json=request)
         print("Status code: ", response.status_code)
@@ -99,7 +119,8 @@ def send_request(request):
         print("Couldn't establish connection")
         return
     if response.status_code == 200 or response.status_code == 400:
-        print(response.json())
+        #print(response.json())
+        acumulador.sumar(response.json())
         import os
         directories = os.listdir('Crops/')
         for file in directories:
@@ -112,10 +133,14 @@ def send_request(request):
 video = cv2.VideoCapture(0)
 constructorVentana()
 numero=0
+acumulador = Acumulador()
 while True:
     _, imagen = video.read()
     imagen_pre = imagen.copy()
     coordenadas = detectarForma(imagen)
+    if acumulador.mostrar():
+        cv2.putText(imagen, "Suma es: "+str(acumulador.suma()), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(imagen, "Acumulado es: "+str(acumulador.acumulado()), (10, 75), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
     cv2.imshow("Imagen", imagen)
     #Para el programa
     k=cv2.waitKey(5) & 0xFF
@@ -126,7 +151,7 @@ while True:
         numero += 1
         saved = save_image(imagen_pre, coordenadas[1], numero)
         numero += 1
-        send_server()
+        send_server(acumulador)
 
 
 cv2.destroyAllWindows()
