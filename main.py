@@ -9,8 +9,8 @@ def nothing(x):
     pass
 def constructorVentana():
     cv2.namedWindow(nameWindow)
-    cv2.createTrackbar("min",nameWindow,200,255,nothing)
-    cv2.createTrackbar("max", nameWindow, 250, 255, nothing)
+    cv2.createTrackbar("min",nameWindow,75,255,nothing)
+    cv2.createTrackbar("max", nameWindow, 100, 255, nothing)
     cv2.createTrackbar("kernel", nameWindow, 8,30, nothing)
     cv2.createTrackbar("areaMin", nameWindow, 5000, 10000, nothing)
     #cv2.createTrackbar("areaMax", nameWindow, 5000, 100000000, nothing)
@@ -27,6 +27,12 @@ def calcularAreas(figuras):
 
 def detectarForma(imagen):
     imagenGris = cv2.cvtColor(imagen,cv2.COLOR_BGR2GRAY)
+    img = imagen.copy()
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    # -----Splitting the LAB image to different channels-------------------------
+    l, a, b = cv2.split(lab)
+    cv2.imshow('a_channel', a)
+    imagenGris = a
     #cv2.imshow("Grises",imagenGris)
     min = cv2.getTrackbarPos("min", nameWindow)
     max = cv2.getTrackbarPos("max", nameWindow)
@@ -124,9 +130,12 @@ while True:
         send_server()
     elif k==99:
         print("c")
-        saved = save_image(imagen_pre,coordenadas,numero)
-        cv2.imshow("Imagen Guardada " + str(numero), saved)
-        numero+=1
+        try:
+            saved = save_image(imagen_pre,coordenadas,numero)
+            cv2.imshow("Imagen Guardada " + str(numero), saved)
+            numero+=1
+        except:
+            print("No hay ROI detectada")
         #save
 
 
