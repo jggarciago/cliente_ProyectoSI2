@@ -4,7 +4,7 @@ import base64
 import requests
 import numpy as np
 
-nameWindow="Proyecto"
+nameWindow="Proyecto_"
 def nothing(x):
     pass
 def constructorVentana():
@@ -19,7 +19,11 @@ def calcularAreas(figuras):
     areas = []
     for figuraActual in figuras:
         areas.append(cv2.contourArea(figuraActual))
-    return areas
+
+    new_figuras = [x for (y, x) in sorted(zip(areas, figuras), key=lambda pair: pair[0])]
+    areas.sort(reverse=True)
+    new_figuras.reverse()
+    return areas, new_figuras
 
 def detectarForma(imagen):
     imagenGris = cv2.cvtColor(imagen,cv2.COLOR_BGR2GRAY)
@@ -31,15 +35,15 @@ def detectarForma(imagen):
     kernel = np.ones((tamañoKernel,tamañoKernel),np.uint8)
     bordes = cv2.dilate(bordes,kernel)
     cv2.imshow("Bordes",bordes)
-    figuras,jerarquia = cv2.findContours(bordes, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    areas = calcularAreas(figuras)
+    figuras,jerarquia = cv2.findContours(bordes, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+    areas, figuras = calcularAreas(figuras)
     i = 0
     areaMin=cv2.getTrackbarPos("areaMin", nameWindow)
     for figuraActual in figuras:
         if areas[i] >= areaMin:
             vertices = cv2.approxPolyDP(figuraActual,0.05*cv2.arcLength(figuraActual,True),True)
             mensaje = "ROI" #str(len(vertices))
-            if len(vertices) == 4:
+            if len(vertices) == 4 and jerarquia[0][i][3]!=-1:
                 cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
                 return vertices
