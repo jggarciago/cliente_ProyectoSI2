@@ -156,25 +156,27 @@ def rotate_image(image, angle):
 def rotate_good():
     import imutils
     # load the image from disk
-    image = cv2.imread("CropsServidor/0_57.jpg")
+    image = cv2.imread("CropsServidor/crop_12.png")
+
     # loop over the rotation angles
-    for angle in np.arange(0, 360, 15):
-        rotated = imutils.rotate(image, angle)
-        cv2.imshow("Rotated (Problematic)", rotated)
-        cv2.waitKey(0)
+    if False:
+        for angle in np.arange(0, 360, 15):
+            rotated = imutils.rotate(image, angle)
+            cv2.imshow("Rotated (Problematic)", rotated)
+            cv2.waitKey(0)
     # loop over the rotation angles again, this time ensuring
     # no part of the image is cut off
     for angle in np.arange(0, 360, 10):
         print(angle)
         rotated = imutils.rotate_bound(image, angle)
-        cv2.imshow("Rotated (Correct)", rotated)
+        cv2.imshow("Rotated", rotated)
         cv2.waitKey(0)
 
-format_dataset([0,1,2,3,4,5,6,7,8,9], 8, 2)
+#format_dataset([0,1,2,3,4,5,6,7,8,9], 8, 2)
 #predecir(5)
 
 #rotar()
 #flip()
 #formatearImagen()
 
-#rotate_good()
+rotate_good()

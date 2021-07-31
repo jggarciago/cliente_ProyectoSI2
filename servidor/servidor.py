@@ -34,11 +34,13 @@ def predict():
                 decode_image(img["content"], img["id"])
                 imagen = cv2.imread(dirImg + "/" + img["id"])
                 modelo0 = modelos_todos[0]
-                if modelo < len(modelos_todos):
-                    modelo0 = modelos_todos[modelo]
+                num = int(modelo) - 1
+                if num < len(modelos_todos) and num >= 0:
+                    modelo0 = modelos_todos[num]
                 t1_start = process_time()
                 claseResultado = modelo0.predecir(imagen)
                 t1_stop = process_time()
+                print(modelo)
                 print(clases[claseResultado])
                 resultados.append({"class":clases[claseResultado], "id-image":img["id"]})
                 tiempo = tiempo + t1_stop - t1_start
