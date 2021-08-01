@@ -130,7 +130,7 @@ while True:
         print("c")
         try:
             saved = save_image(imagen_pre,coordenadas,numero)
-            cv2.imshow("Imagen Guardada " + str(numero), saved)
+            #cv2.imshow("Imagen Guardada " + str(numero), saved)
             numero+=1
         except:
             print("No hay ROI detectada")
