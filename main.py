@@ -49,7 +49,7 @@ def detectarForma(imagen):
         if areas[i] >= areaMin:
             vertices = cv2.approxPolyDP(figuraActual,0.05*cv2.arcLength(figuraActual,True),True)
             mensaje = "ROI" #str(len(vertices))
-            if len(vertices) == 4 and jerarquia[0][i][3]!=-1:
+            if len(vertices) == 4 : #and jerarquia[0][i][3]!=-1
                 cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
                 return vertices
