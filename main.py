@@ -10,7 +10,7 @@ def nothing(x):
 def constructorVentana():
     cv2.namedWindow(nameWindow)
     cv2.createTrackbar("min",nameWindow,45,255,nothing)
-    cv2.createTrackbar("max", nameWindow, 50, 255, nothing)
+    cv2.createTrackbar("max", nameWindow, 35, 255, nothing)
     cv2.createTrackbar("kernel", nameWindow, 6,30, nothing)
     cv2.createTrackbar("areaMin", nameWindow, 15000, 10000, nothing)
     #cv2.createTrackbar("areaMax", nameWindow, 5000, 100000000, nothing)
@@ -113,12 +113,22 @@ def send_request(request):
         return
     if response.status_code == 200 or response.status_code == 400:
         print(response.json())
+        show_results(response.json())
         import os
         directories = os.listdir('Crops/')
         for file in directories:
             os.remove('Crops/' + str(file))
     else:
         print("Unexpected server's error")
+
+def show_results(json):
+    data = json['results'][0]
+    for results in data['results']:
+        img = cv2.imread('Crops/' + results['id-image'])
+        mensaje = "Modelo"+str(data['model_id'])+" Clase: "+ results['class']
+        cv2.putText(img, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.imshow(str(results['id-image']), img)
+    #{'message': 'Predictions made satisfactorily', 'results': [{'model_id': 0, 'results': [{'class': 'Regla', 'id-image': 'crop_0.png'}]}], 'status': 'success'}
 
 
 ### MAIN ###
