@@ -9,9 +9,9 @@ def nothing(x):
     pass
 def constructorVentana():
     cv2.namedWindow(nameWindow)
-    cv2.createTrackbar("min",nameWindow,75,255,nothing)
-    cv2.createTrackbar("max", nameWindow, 100, 255, nothing)
-    cv2.createTrackbar("kernel", nameWindow, 8,30, nothing)
+    cv2.createTrackbar("min",nameWindow,45,255,nothing)
+    cv2.createTrackbar("max", nameWindow, 50, 255, nothing)
+    cv2.createTrackbar("kernel", nameWindow, 9,30, nothing)
     cv2.createTrackbar("areaMin", nameWindow, 5000, 10000, nothing)
     #cv2.createTrackbar("areaMax", nameWindow, 5000, 100000000, nothing)
 
@@ -20,10 +20,9 @@ def calcularAreas(figuras):
     for figuraActual in figuras:
         areas.append(cv2.contourArea(figuraActual))
 
-    new_figuras = [x for (y, x) in sorted(zip(areas, figuras), key=lambda pair: pair[0])]
-    areas.sort(reverse=True)
-    new_figuras.reverse()
-    return areas, new_figuras
+    sorted_index = [i[0] for i in sorted(enumerate(areas), key=lambda x:x[1])]
+    sorted_index.reverse()
+    return areas, sorted_index
 
 def detectarForma(imagen):
     imagenGris = cv2.cvtColor(imagen,cv2.COLOR_BGR2GRAY)
@@ -42,20 +41,19 @@ def detectarForma(imagen):
     bordes = cv2.dilate(bordes,kernel)
     cv2.imshow("Bordes",bordes)
     figuras,jerarquia = cv2.findContours(bordes, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-    areas, figuras = calcularAreas(figuras)
-    i = 0
+    areas, sorted_index = calcularAreas(figuras)
     areaMin=cv2.getTrackbarPos("areaMin", nameWindow)
-    for figuraActual in figuras:
-        if areas[i] >= areaMin:
+    for indice_figura in sorted_index:
+        if areas[indice_figura] >= areaMin:
+            figuraActual = figuras[indice_figura]
             vertices = cv2.approxPolyDP(figuraActual,0.05*cv2.arcLength(figuraActual,True),True)
             mensaje = "ROI" #str(len(vertices))
-            if len(vertices) == 4 : #and jerarquia[0][i][3]!=-1
+            if len(vertices) == 4 and jerarquia[0][indice_figura][3]!=-1:
                 cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
                 return vertices
 
 
-        i=i+1
 
 
 def save_image(image, contours, num):
