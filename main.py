@@ -98,7 +98,7 @@ def convert_image(file):
 def format_request(imgs):
     datos = {"id_client": "001",
              "images": imgs,
-             "models": [""]}
+             "models": [0,1]}
     print(datos)
     return datos
 
@@ -122,12 +122,22 @@ def send_request(request):
         print("Unexpected server's error")
 
 def show_results(json):
-    data = json['results'][0]
-    for results in data['results']:
-        img = cv2.imread('Crops/' + results['id-image'])
-        mensaje = "Modelo"+str(data['model_id'])+" Clase: "+ results['class']
-        cv2.putText(img, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-        cv2.imshow(str(results['id-image']), img)
+    data = json['results']
+    parsed_data = {}
+    for resultado in data:
+        for info in resultado['results']:
+            if parsed_data.get(info['id-image']) is None:
+                parsed_data[info['id-image']] = []
+            info['model_id'] = resultado['model_id']
+            parsed_data[info['id-image']].append(info)
+    print(parsed_data)
+    for imagen in parsed_data:
+        info = parsed_data[imagen]
+        img = cv2.imread('Crops/' + imagen)
+        for modelo in info:
+            mensaje = "Modelo "+str(modelo['model_id'])+" Clase: "+ modelo['class']
+            cv2.putText(img, mensaje, (10, 50+35*modelo['model_id']), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.imshow(str(modelo['id-image']), img)
     #{'message': 'Predictions made satisfactorily', 'results': [{'model_id': 0, 'results': [{'class': 'Regla', 'id-image': 'crop_0.png'}]}], 'status': 'success'}
 
 
