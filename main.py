@@ -11,8 +11,8 @@ def constructorVentana():
     cv2.namedWindow(nameWindow)
     cv2.createTrackbar("min",nameWindow,45,255,nothing)
     cv2.createTrackbar("max", nameWindow, 50, 255, nothing)
-    cv2.createTrackbar("kernel", nameWindow, 9,30, nothing)
-    cv2.createTrackbar("areaMin", nameWindow, 5000, 10000, nothing)
+    cv2.createTrackbar("kernel", nameWindow, 6,30, nothing)
+    cv2.createTrackbar("areaMin", nameWindow, 15000, 10000, nothing)
     #cv2.createTrackbar("areaMax", nameWindow, 5000, 100000000, nothing)
 
 def calcularAreas(figuras):
@@ -43,15 +43,26 @@ def detectarForma(imagen):
     figuras,jerarquia = cv2.findContours(bordes, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
     areas, sorted_index = calcularAreas(figuras)
     areaMin=cv2.getTrackbarPos("areaMin", nameWindow)
+    primer_figura = None
+    primer_vertices = None
+    mensaje = "ROI"
     for indice_figura in sorted_index:
         if areas[indice_figura] >= areaMin:
             figuraActual = figuras[indice_figura]
             vertices = cv2.approxPolyDP(figuraActual,0.05*cv2.arcLength(figuraActual,True),True)
-            mensaje = "ROI" #str(len(vertices))
+             #str(len(vertices))
             if len(vertices) == 4 and jerarquia[0][indice_figura][3]!=-1:
-                cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-                cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
-                return vertices
+                if primer_figura is None:
+                    primer_figura = figuraActual
+                    primer_vertices = vertices
+                else:
+                    cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                    cv2.drawContours(imagen, [figuraActual], 0, (0, 0, 255), 2)
+                    return vertices
+    if primer_figura is not None:
+        cv2.putText(imagen, mensaje, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.drawContours(imagen, [primer_figura], 0, (0, 0, 255), 2)
+        return primer_vertices
 
 
 
