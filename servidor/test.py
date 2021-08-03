@@ -70,6 +70,7 @@ def format_img(in_img, out_img):
         square[int((y-height)/2):int(y-(y-height)/2), int((x-width)/2):int(x-(x-width)/2)] = img
     dim = (256, 256)
     resized = cv2.resize(square, dim)
+    resized = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
     cv2.imwrite(out_img,resized)
 
 def format_dataset(clases, train, test):
@@ -90,7 +91,35 @@ def format_dataset(clases, train, test):
                     done = True
                 format_img(dir_inicial + file, "dataset/"+dir+"/" + str(clase) + "/" + str(clase) + "_" + str(num) + ".jpg")
                 num = num + 1
-            
+
+def format_dataset2(clases, train_p, test_p):
+    import math
+    nombre = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
+    test_final  = []
+    train_final = []
+    for clase in clases:
+        dir_inicial = 'imagenes0/' + nombre[clase] + "/"
+        directories = os.listdir(dir_inicial)
+        total = len(directories)
+        train = math.floor(train_p * total)
+        test = total - train
+        train_final.append(train)
+        test_final.append(test)
+        num = 0
+        dir = 'train'
+        done = False
+        for file in directories:
+            if not done:
+                print(file)
+                if num == train:
+                    dir = 'test'
+                    num = 0
+                if (dir == 'test' and num == test):
+                    done = True
+                format_img(dir_inicial + file, "dataset/"+dir+"/" + str(clase) + "/" + str(clase) + "_" + str(num) + ".jpg")
+                num = num + 1
+    print(test_final)
+    print(train_final)
 
 def dataset_pruebas():
     clases = [0, 1, 2, 3, 4]
@@ -113,6 +142,75 @@ def servidor():
     else:
         print("Falló servidor")
 
-#format_dataset([4], 140, 35)
-predecir()
+def renombrar():
+    import os
+    for i in range(2, 7):
+        dir = 'Crops - copia ('+str(i)+')/'
+        directories = os.listdir(dir)
+        for file in directories:
+            os.rename(dir + str(file), dir + str(i) + str(file))
 
+
+
+def flip():
+    img = cv2.imread('CropsServidor/0_57.jpg')
+    flipHorizontal = cv2.flip(img, 1)
+    cv2.imwrite('CropsServidor/0_57_f.jpg', flipHorizontal)
+
+def formatearImagen():
+    imagen = cv2.imread('CropsServidor/0_57.jpg')
+    imagen = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
+    imagen = cv2.resize(imagen, (256, 256))
+    imagen = imagen.flatten()
+    imagen = imagen / 255
+    cv2.imwrite('CropsServidor/0_57_f2.jpg', imagen)
+
+def rotate_image(image, angle):
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    return result
+
+
+def rotate_good():
+    import imutils
+    # load the image from disk
+    image = cv2.imread("CropsServidor/crop_12.png")
+
+    # loop over the rotation angles
+    if False:
+        for angle in np.arange(0, 360, 15):
+            rotated = imutils.rotate(image, angle)
+            cv2.imshow("Rotated (Problematic)", rotated)
+            cv2.waitKey(0)
+    # loop over the rotation angles again, this time ensuring
+    # no part of the image is cut off
+    for angle in np.arange(0, 360, 10):
+        print(angle)
+        rotated = imutils.rotate_bound(image, angle)
+        cv2.imshow("Rotated", rotated)
+        cv2.waitKey(0)
+
+def rotar():
+    img = cv2.imread('CropsServidor/0_57.jpg')
+    print(type(img))
+    # <class 'numpy.ndarray'>
+
+    print(img.shape)
+    # (225, 400, 3)
+
+    img_rotate_90_clockwise = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+    cv2.imwrite('CropsServidor/0_57_2.jpg', img_rotate_90_clockwise)
+    # True
+
+    img_rotate_90_counterclockwise = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    cv2.imwrite('CropsServidor/0_57_3.jpg', img_rotate_90_counterclockwise)
+    # True
+
+    img_rotate_180 = cv2.rotate(img, cv2.ROTATE_180)
+    cv2.imwrite('CropsServidor/0_57_4.jpg', img_rotate_180)
+    # True
+
+format_dataset2([0, 1, 2, 3, 4], 0.8, 0.2)
+#predecir()
+#renombrar()
