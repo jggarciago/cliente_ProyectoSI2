@@ -96,8 +96,8 @@ pixeles=ancho*alto
 numeroCanales=1
 formaImagen=(ancho,alto,numeroCanales)
 
-cantidadDatosEntrenamiento=[20, 5, 54, 36, 32]
-cantidadDatosPruebas=[5, 2, 14, 10, 8]
+cantidadDatosEntrenamiento=[45, 53, 59, 60, 44]
+cantidadDatosPruebas=[12, 14, 15, 15, 12]
 
 #cantidadDatosEntrenamiento=[18, 18, 18, 18, 18]
 #cantidadDatosPruebas=[5, 5, 5, 5, 5]
@@ -192,7 +192,6 @@ for train, test in kfold.split(inputs, targets):
 
     # Increase fold number
     fold_no = fold_no + 1
-    break
 nombre_metricas = ["loss", "accuracy", "f1_score", "precision", "recall"]
 total = 0
 loss = 0.0

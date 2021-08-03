@@ -92,7 +92,7 @@ def format_dataset(clases, train, test):
                 format_img(dir_inicial + file, "dataset/"+dir+"/" + str(clase) + "/" + str(clase) + "_" + str(num) + ".jpg")
                 num = num + 1
 
-def format_dataset2(clases, train_p, test_p):
+def format_dataset2(clases, train_p):
     import math
     nombre = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
     test_final  = []
@@ -211,6 +211,6 @@ def rotar():
     cv2.imwrite('CropsServidor/0_57_4.jpg', img_rotate_180)
     # True
 
-format_dataset2([0, 1, 2, 3, 4], 0.8, 0.2)
+format_dataset2([0, 1, 2, 3, 4], 0.8)
 #predecir()
 #renombrar()
