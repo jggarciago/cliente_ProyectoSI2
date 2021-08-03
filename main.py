@@ -98,7 +98,7 @@ def convert_image(file):
 def format_request(imgs):
     datos = {"id_client": "001",
              "images": imgs,
-             "models": [0]}
+             "models": [0,1,2,3]}
     print(datos)
     return datos
 
