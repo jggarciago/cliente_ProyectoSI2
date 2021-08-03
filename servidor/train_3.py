@@ -12,7 +12,7 @@ from sklearn.metrics import classification_report
 
 numero_modelo = 1
 
-epocas = 15
+epocas = 20
 batch = 60
 kernel = [15, 3]
 strides = [4, 1]
@@ -181,7 +181,7 @@ for train, test in kfold.split(inputs, targets):
 
     # Increase fold number
     fold_no = fold_no + 1
-    break
+    #break
 nombre_metricas = ["loss", "accuracy", "f1_score", "precision", "recall"]
 total = 0
 loss = 0.0
