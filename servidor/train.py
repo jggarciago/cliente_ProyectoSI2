@@ -10,13 +10,24 @@ from keras import backend as K
 from sklearn.metrics import classification_report
 
 
-numero_modelo = 2
+numero_modelo = 5
 
-epocas = 8
+#epocas = 7
+#batch = 60
+#kernel = [5, 3]
+#strides = [1, 1]
+#filtros = [8, 16]
+#pool = [2, 2]
+#strides_pool = [2, 2]
+#padding = ["same", "same"]
+#activacion = ["relu", "relu"]
+#capa_densa = 128
+
+epocas = 15
 batch = 60
-kernel = [5, 3]
-strides = [1, 1]
-filtros = [8, 16]
+kernel = [28, 5]
+strides = [4, 1]
+filtros = [28, 14]
 pool = [2, 2]
 strides_pool = [2, 2]
 padding = ["same", "same"]
@@ -85,8 +96,8 @@ pixeles=ancho*alto
 numeroCanales=1
 formaImagen=(ancho,alto,numeroCanales)
 
-cantidadDatosEntrenamiento=[38, 18, 54, 44, 37]
-cantidadDatosPruebas=[10, 5, 14, 11, 10]
+cantidadDatosEntrenamiento=[20, 5, 54, 36, 32]
+cantidadDatosPruebas=[5, 2, 14, 10, 8]
 
 #cantidadDatosEntrenamiento=[18, 18, 18, 18, 18]
 #cantidadDatosPruebas=[5, 5, 5, 5, 5]
