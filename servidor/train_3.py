@@ -10,14 +10,14 @@ from keras import backend as K
 from sklearn.metrics import classification_report
 
 
-numero_modelo = 3
+numero_modelo = 1
 
 epocas = 15
 batch = 60
-kernel = [28, 5]
+kernel = [15, 3]
 strides = [4, 1]
 filtros = [28, 14]
-pool = [2, 2]
+pool = [3, 2]
 strides_pool = [2, 2]
 padding = ["same", "same"]
 activacion = ["relu", "relu"]
