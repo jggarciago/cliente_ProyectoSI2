@@ -98,7 +98,7 @@ def convert_image(file):
 def format_request(imgs):
     datos = {"id_client": "001",
              "images": imgs,
-             "models": [0,1,2,3]}
+             "models": [1, 2, 3, 4]}
     print(datos)
     return datos
 
@@ -142,7 +142,7 @@ def show_results(json):
 
 
 ### MAIN ###
-video = cv2.VideoCapture(0)
+video = cv2.VideoCapture(1)
 constructorVentana()
 numero=0
 while True:

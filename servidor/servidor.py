@@ -10,7 +10,7 @@ dirImg = "CropsServidor"
 extImg = ".png"
 clases = ["Martillo", "Destornillador", "Llave", "Alicate", "Regla"]
 modelos_todos = []
-for i in range(1, 4):
+for i in [1,2,3,4]:
     modelos_todos.append(Prediccion("models/modelo"+str(i)+".h5", 256, 256))
 
 app = Flask(__name__)
@@ -47,6 +47,9 @@ def predict():
                 total = total + 1
             if total != 0:
                 tiempo = tiempo / total
+                print("TIEMPO")
+                print(modelo)
+                print(tiempo)
             resultadosTodos.append({"model_id":modelo, "results":resultados})
 
         return {"status":"success", "message":"Predictions made satisfactorily", "results":resultadosTodos}, 200
