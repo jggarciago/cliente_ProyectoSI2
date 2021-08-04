@@ -142,7 +142,7 @@ def show_results(json):
 
 
 ### MAIN ###
-video = cv2.VideoCapture(1)
+video = cv2.VideoCapture(0)
 constructorVentana()
 numero=0
 while True:
